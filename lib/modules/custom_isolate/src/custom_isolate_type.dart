@@ -1,0 +1,1 @@
+typedef HandleIsolateMessage = Function(dynamic);
