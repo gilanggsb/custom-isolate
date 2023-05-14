@@ -2,53 +2,48 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../modules.dart';
+import '../../custom_isolate.dart';
 
-
-
-StopwatchIsolate stopwatchIsolate = StopwatchIsolateImpl();
-StopwatchIsolateModel stopwatchIsolateModel = StopwatchIsolateModel();
-StopwatchIsolateModel stopwatchIsolateModel2 = StopwatchIsolateModel();
-StopwatchIsolateModel stopwatchIsolateModel3 = StopwatchIsolateModel();
-StopwatchIsolateModel stopwatchIsolateModel4 = StopwatchIsolateModel();
 void main(List<String> args) async {
-  stopwatchIsolateModel.isolate = await initStopwatchIsolate(stopwatchIsolateModel);
-  stopwatchIsolateModel2.isolate = await initStopwatchIsolate(stopwatchIsolateModel2);
+  StopwatchIsolate stopwatchIsolate = StopwatchIsolateImpl();
+  StopwatchIsolateModel stopwatchIsolateModel =
+      StopwatchIsolateModel(isolateName: "Stopwatch 1");
+  StopwatchIsolateModel stopwatchIsolateModel2 =
+      StopwatchIsolateModel(isolateName: "Stopwatch 2");
+  stopwatchIsolateModel.isolate =
+      await initStopwatchIsolate(stopwatchIsolateModel, stopwatchIsolate);
+  stopwatchIsolateModel2.isolate =
+      await initStopwatchIsolate(stopwatchIsolateModel2, stopwatchIsolate);
 }
 
-void stop() {
+void stop(
+  StopwatchIsolate stopwatchIsolate,
+  StopwatchIsolateModel stopwatchIsolateModel,
+) {
   stopwatchIsolate.stop(stopwatchIsolateModel.isolatedSendPort);
 }
 
-void start() {
+void start(
+  StopwatchIsolate stopwatchIsolate,
+  StopwatchIsolateModel stopwatchIsolateModel,
+) {
   stopwatchIsolate.start(stopwatchIsolateModel.isolatedSendPort);
 }
 
-void close() {
+void close(
+  StopwatchIsolate stopwatchIsolate,
+  StopwatchIsolateModel stopwatchIsolateModel,
+) {
   stopwatchIsolate.close(stopwatchIsolateModel.isolate);
 }
 
-void stop2() {
-  stopwatchIsolate.stop(stopwatchIsolateModel2.isolatedSendPort);
-}
-
-void start2() {
-  stopwatchIsolate.start(stopwatchIsolateModel2.isolatedSendPort);
-}
-
-void close2() {
-  stopwatchIsolate.close(stopwatchIsolateModel2.isolate);
-}
-
-void extractData(dynamic message) {
-  if (message is! int) {
-    return;
-  }
-  debugPrint("$message");
+void extractData(Duration message) {
+  debugPrint("duration data from isolated port: ${message.inSeconds}");
 }
 
 Future<Isolate> initStopwatchIsolate(
   StopwatchIsolateModel stopwatchIsolateModel,
+  StopwatchIsolate stopwatchIsolate,
 ) async {
   return await stopwatchIsolate.createIsolate(stopwatchIsolateModel, (message) {
     debugPrint('mainPort message $message');
@@ -56,6 +51,7 @@ Future<Isolate> initStopwatchIsolate(
       stopwatchIsolateModel.isolatedSendPort = message;
       return;
     }
+    if (message is! Duration) return;
     extractData(message);
   });
 }
