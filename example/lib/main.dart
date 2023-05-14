@@ -1,3 +1,4 @@
+// ignore_for_file: unnecessary_null_comparison
 
 import 'package:custom_isolate/modules/modules.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +15,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late StopwatchIsolate stopwatchIsolate;
-  late StopwatchIsolateModel stopwatchIsolateModel;
+  StopwatchIsolate? stopwatchIsolate;
+  StopwatchIsolateModel? stopwatchIsolateModel;
   int seconds = 0;
 
   @override
@@ -30,50 +31,55 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initStopwatchIsolate() async {
+    // cek if stopwatchIsolateModel has been initialized
+    if(stopwatchIsolateModel != null) return;
     // create stopwatch isolate model
-    stopwatchIsolateModel = StopwatchIsolateModel();
+    stopwatchIsolateModel = StopwatchIsolateModel(isolateName: "Stopwatch");
     // create stopwatch isolate class
     stopwatchIsolate = StopwatchIsolateImpl();
     // create isolate
-    stopwatchIsolateModel.isolate = await stopwatchIsolate.createIsolate(
-        stopwatchIsolateModel, _handleMessage);
+    stopwatchIsolateModel!.isolate = await stopwatchIsolate!
+        .createIsolate(stopwatchIsolateModel!, _handleMessage);
   }
 
   //handle message from isolated port
   void _handleMessage(message) {
     // must implement this to trigger stopwatch from main port to isolated port
     if (message is SendPort) {
-      stopwatchIsolateModel.isolatedSendPort = message;
+      stopwatchIsolateModel?.isolatedSendPort = message;
       return;
     }
-    if (message is! int) return;
+    if (message is! Duration) return;
     extractData(message);
   }
 
-  void extractData(dynamic data) {
+  void extractData(Duration data) {
     setState(() {
-      seconds = data;
+      seconds = data.inSeconds;
     });
   }
 
   void stopStopwatch() {
-    stopwatchIsolate.stop(stopwatchIsolateModel.isolatedSendPort);
+    stopwatchIsolate?.stop(stopwatchIsolateModel?.isolatedSendPort);
   }
 
   void startStopwatch() {
-    stopwatchIsolate.start(stopwatchIsolateModel.isolatedSendPort);
+    stopwatchIsolate?.start(stopwatchIsolateModel?.isolatedSendPort);
   }
 
   void pauseStopwatch() {
-    stopwatchIsolate.pause(stopwatchIsolateModel.isolatedSendPort);
+    stopwatchIsolate?.pause(stopwatchIsolateModel?.isolatedSendPort);
   }
 
   void resumeStopwatch() {
-    stopwatchIsolate.resume(stopwatchIsolateModel.isolatedSendPort);
+    stopwatchIsolate?.resume(stopwatchIsolateModel?.isolatedSendPort);
   }
 
   void closeStopwatchIsolate() {
-    stopwatchIsolate.close(stopwatchIsolateModel.isolate);
+    if (stopwatchIsolateModel == null) {
+      return;
+    }
+    stopwatchIsolate?.close(stopwatchIsolateModel!.isolate);
   }
 
   @override
