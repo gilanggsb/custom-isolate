@@ -3,28 +3,27 @@ import 'package:flutter/material.dart';
 import '../../modules.dart';
 
 class StopwatchIsolateImpl extends StopwatchIsolate {
-  late StopwatchIsolateModel stopwatchIsolateModel;
   @override
   void pause(SendPort? isolatedSendPort) {
-    printStopwatchIsolate('pause stopwatch sendPort :');
+    printStopwatchIsolate('pause $isolatedSendPort');
     isolatedSendPort?.send(StopwatchIsolateEnum.pause);
   }
 
   @override
   void resume(SendPort? isolatedSendPort) {
-    printStopwatchIsolate('resume stopwatch sendPort :');
+    printStopwatchIsolate('resume $isolatedSendPort');
     isolatedSendPort?.send(StopwatchIsolateEnum.resume);
   }
 
   @override
   void start(SendPort? isolatedSendPort) {
-    printStopwatchIsolate('start stopwatch sendPort');
+    printStopwatchIsolate('start $isolatedSendPort');
     isolatedSendPort?.send(StopwatchIsolateEnum.start);
   }
 
   @override
   void stop(SendPort? isolatedSendPort) {
-    printStopwatchIsolate('stop stopwatch sendPort');
+    printStopwatchIsolate('stop $isolatedSendPort');
     isolatedSendPort?.send(StopwatchIsolateEnum.stop);
   }
 
@@ -33,16 +32,15 @@ class StopwatchIsolateImpl extends StopwatchIsolate {
     StopwatchIsolateModel isolateModel,
     HandleIsolateMessage handleIsolateMessage,
   ) async {
+    printStopwatchIsolate('create isolate');
     ReceivePort receivePort = ReceivePort();
     isolateModel.sendPort = receivePort.sendPort;
-    stopwatchIsolateModel = isolateModel;
-    printStopwatchIsolate('create isolate stopwatch');
     Isolate isolate = await Isolate.spawn<StopwatchIsolateModel>(
       stopwatchCallback,
       isolateModel,
     );
     receivePort.listen(handleIsolateMessage);
-    printStopwatchIsolate('isolate stopwatch created');
+    printStopwatchIsolate('isolate created');
     return isolate;
   }
 
@@ -69,7 +67,7 @@ class StopwatchIsolateImpl extends StopwatchIsolate {
       // pause stopwatch
       if (message == StopwatchIsolateEnum.pause) {
         stopwatch.stop();
-        sendDataToMainPort(mainSendPort, stopwatch.elapsed);
+        sendDataToMainPort(mainSendPort, stopwatch.elapsed.inSeconds);
       }
 
       // resume stopwatch
@@ -80,7 +78,7 @@ class StopwatchIsolateImpl extends StopwatchIsolate {
       // stop stopwatch
       if (message == StopwatchIsolateEnum.stop) {
         stopwatch.stop();
-        sendDataToMainPort(mainSendPort, stopwatch.elapsed);
+        sendDataToMainPort(mainSendPort, stopwatch.elapsed.inSeconds);
         stopwatch.reset();
       }
     });
@@ -96,10 +94,10 @@ class StopwatchIsolateImpl extends StopwatchIsolate {
   @override
   Future<void> close(Isolate isolate) async {
     isolate.kill(priority: Isolate.immediate);
-    printStopwatchIsolate('destroyed $isolate');
+    printStopwatchIsolate('isolate destroyed $isolate');
   }
 
   void printStopwatchIsolate(String message) {
-    debugPrint('Isolated ${stopwatchIsolateModel.isolateName}: $message');
+    debugPrint('StopwatchIsolate : $message');
   }
 }
