@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
 import '../modules.dart';
+
 
 
 StopwatchIsolate stopwatchIsolate = StopwatchIsolateImpl();

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../../modules.dart';
 
 class StopwatchIsolateImpl extends StopwatchIsolate {

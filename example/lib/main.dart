@@ -1,4 +1,6 @@
-import 'package:custom_isolate/custom_isolate.dart';
+
+import 'package:custom_isolate/modules/modules.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
